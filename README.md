@@ -1,1 +1,4 @@
-# alx-system_engineering-devops
+#!/bin/bash
+The repository is about bash basics
+
+
