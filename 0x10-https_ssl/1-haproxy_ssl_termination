@@ -1,0 +1,47 @@
+global
+        log /dev/log    local0
+        log /dev/log    local1 notice
+        chroot /var/lib/haproxy
+        stats socket /run/haproxy/admin.sock mode 660 level admin expose->
+        stats timeout 30s
+        user haproxy
+        group haproxy
+        daemon
+
+        # Default SSL material locations
+        ca-base /etc/ssl/certs
+        crt-base /etc/ssl/private
+
+        # See: https://ssl-config.mozilla.org/#server=haproxy&server-vers>
+        ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA->
+        ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_>
+        ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+        errorfile 400 /etc/haproxy/errors/400.http
+        errorfile 403 /etc/haproxy/errors/403.http
+        errorfile 408 /etc/haproxy/errors/408.http
+        errorfile 500 /etc/haproxy/errors/500.http
+        errorfile 502 /etc/haproxy/errors/502.http
+        errorfile 503 /etc/haproxy/errors/503.http
+        errorfile 504 /etc/haproxy/errors/504.httP
+
+frontend http_front
+        bind *:80
+        stats uri /haproxy?stats
+        default_backend http_back
+
+backend web_server
+        balance roundrobin
+        server 122827-web-01 34.232.69.113 check
+        server 122827-web-02 18.206.198.39 check
+        
+backend letsencrypt-backend
+        server letsencrypt 127.0.0.1:54321
